@@ -1,0 +1,78 @@
+
+## The code to anonymize the batch email data.
+
+
+##Creating a list of all the email files (assuming they are given in .csv format)
+
+import glob
+
+list_of_files = glob.glob('*.csv')
+
+#reading the email data and given wordlistof names(for matching)
+
+count=0
+names=open("top1000names.txt", "r")
+libnames=open("LibNames.txt", "r")
+import re
+commonname = names.read()
+staffnames=libnames.read()
+commonnamelist=re.findall(r"[\w]+",commonname)
+staffnamelist=re.findall(r"[\w]+",staffnames)
+new=[]
+for each in commonnamelist:
+       ne=each[1:].lower()
+       ne=each[0]+ne
+       new=new+[ne]
+totalnamelist=new+staffnamelist
+
+##running an iteration to sequentially store all the names,address and number. 
+
+for file in list_of_files:
+   
+  if file!='top1000names.txt' and file!='LibNames.txt':
+
+     text_file = open(file, "r")
+     
+     DATA = text_file.read()
+     
+     wordlist=re.findall(r"[\w'@().|\"\n<>:-?;\-/,!#\[\]\']+", DATA)
+
+     newwordlist=[]
+
+##replacing the email ids.
+
+     for word in wordlist:
+
+        if '@'in word:
+          word=re.sub(r'([\w\.-]+)@', r'email@', word)
+        for name in totalnamelist:
+           if (len(name))>2:
+              if name in word:
+                word=re.sub(name, 'name', word)
+
+#replacing the phone numbers.
+        match = re.search(r'\d\d\d.\d\d\d.\d\d\d\d',word)
+        if match:
+            
+           word=re.sub(r'\d\d\d.\d\d\d.\d\d\d\d', r'phone_number', word)  
+
+#replacing the postal codes.
+        match = re.search(r'\d\d\d\d\d',word)
+        if match:
+            
+           word=re.sub(match.group(), r'postal_code', word)
+        newwordlist.append(word)
+
+#creating converted output files.     
+  #print (' '.join(newwordlist))
+     text_file = open('out'+file, "w")
+     #text_file.write(timelist[0]+'\n')
+     #text_file.write(timelist[len(timelist)-1]+'\n\n\n') 
+     text_file.write(' '.join(newwordlist))
+  
+     text_file.close()
+     count=count+1
+
+print count
+
+

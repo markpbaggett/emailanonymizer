@@ -1,0 +1,70 @@
+
+## The code to anonymize the batch chat data.
+
+
+##Creating a list of all the chat files (assuming they are given in .txt format)
+import glob
+
+list_of_files = glob.glob('*.txt')
+
+##running an iteration to sequentially store all the names,address and number. 
+count=0
+for file in list_of_files:
+   
+  if file!='top1000names.txt' and file!='LibNames.txt':
+     text_file = open(file, "r")
+     names=open("top1000names.txt", "r")
+     libnames=open("LibNames.txt", "r")
+
+     import re
+     DATA = text_file.read()
+     commonname = names.read()
+     staffnames=libnames.read()
+## finding all the words and storing them.
+     wordlist=re.findall(r"[\w'@().|\"\n<>:-?;\-/,!#\[\]\']+", DATA)
+##finding starting and finishing time.
+
+     timelist=re.findall(r"\d\d:\d\d",DATA)
+     commonnamelist=re.findall(r"[\w]+",commonname)
+     staffnamelist=re.findall(r"[\w]+",staffnames)
+     new=[]
+     for each in commonnamelist:
+       ne=each[1:].lower()
+       ne=each[0]+ne
+       new=new+[ne]
+     totalnamelist=new+staffnamelist
+#totalnamelist=staffnamelist
+###totalnamelist=commonnamelist
+####Then each name
+##is checked with all the names in our name list. If any match is found, then the names is
+##replaced with the string 'name'. All the email ids are replaced too.
+     newwordlist=[]
+     for word in wordlist:
+
+          if '@'in word:
+            if 'utk' in word:
+                word=re.sub(r'([\w\.-]+)@', r'library@', word)
+            else:
+                word=re.sub(r'([\w\.-]+)@', r'guest@', word)
+              
+
+          for name in totalnamelist:
+             if (len(name))>2:
+                if name in word:
+                  word=re.sub(name, 'name', word)
+
+      
+
+          newwordlist.append(word)
+
+     ##creating the output file
+     print file
+     text_file = open('out'+file, "w")
+     text_file.write(timelist[0]+'\n')
+     text_file.write(timelist[len(timelist)-1]+'\n\n\n') 
+     text_file.write(' '.join(newwordlist))
+  
+     text_file.close()
+     count=count+1
+##match = re.search(r'word:\w\w\w', str)
+print count
